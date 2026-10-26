@@ -3,6 +3,9 @@ substitutions:
   friendly_name: "Tuya S11 紅外線與 433MHz 射頻控制器"
   climate_name: "客廳冷氣"
 
+preferences:
+  flash_write_interval: 10s
+
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
@@ -11,12 +14,14 @@ esphome:
       - "-DS11_HARDWARE=1"
   includes:
     - ../s06_hitachi_hw.h
+    - ../s11_fan_rf.h
     - ../components/tuya_rf/cmt2300a.h
     - ../components/tuya_rf/cmt2300a_defs.h
   on_boot:
     priority: 600.0
     then:
       - lambda: |-
+          s11_fan_rf::register_entities(living_room_fan, living_room_fan_light, s11_last_rf_code, living_room_fan_timer);
           // 發射紅外線期間自動暫停 CMT2300A 433MHz 接收中斷，防止中斷風暴干擾時序
           s06_hw::set_rf_pause_hook([](bool pause) {
             if (pause) {
@@ -25,6 +30,11 @@ esphome:
               s11_rf->turn_on_receiver();
             }
           });
+  on_loop:
+    then:
+      - lambda: |-
+          s11_fan_rf::check_fan_timer_loop();
+          s11_fan_rf::check_network_guard_loop();
 
 bk72xx:
   board: generic-bk7238-tuya
@@ -53,7 +63,7 @@ tuya_rf:
   buffer_size: 2000
   filter: 200us
   idle: 15ms
-  dump: [ rc_switch ]
+  dump: []
 
 logger:
   level: DEBUG
@@ -90,6 +100,101 @@ remote_receiver:
     idle: 80ms
     dump: []
 
+# 空調實體 (可選 hitachi_ac344 或 maxe_coolix，紅外發射自動走 S11 硬體 PWM3 / P9)
+climate:
+  - platform: hitachi_ac344
+    name: ${climate_name}
+    id: ac_climate
+    receiver_id: ir_rx
+    repeat: 1
+
+# 433.92MHz 直流變頻風扇雙向同步實體 (支援 CA285 30-bit 6 檔 與 EV1527 24-bit 5 檔)
+fan:
+  - platform: template
+    name: "客廳吊扇"
+    id: living_room_fan
+    speed_count: 6
+    has_direction: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - lambda: |-
+          if (!s11_fan_rf::s_is_rx_syncing && !s11_fan_rf::is_rf_locked()) {
+            int spd = id(living_room_fan).speed;
+            if (spd < 1 || spd > 6) spd = 3;
+            s11_fan_rf::send_ca285_fan_speed(s11_rf, spd);
+          }
+    on_turn_off:
+      - lambda: |-
+          if (!s11_fan_rf::s_is_rx_syncing && !s11_fan_rf::is_rf_locked()) {
+            s11_fan_rf::send_ca285_fan_off(s11_rf);
+          }
+          s11_fan_rf::cancel_fan_timer();
+    on_speed_set:
+      - lambda: |-
+          if (!s11_fan_rf::s_is_rx_syncing && !s11_fan_rf::is_rf_locked()) {
+            int spd = id(living_room_fan).speed;
+            s11_fan_rf::send_ca285_fan_speed(s11_rf, spd);
+          }
+    on_direction_set:
+      - lambda: |-
+          if (!s11_fan_rf::s_is_rx_syncing && !s11_fan_rf::is_rf_locked()) {
+            s11_fan_rf::send_ca285_code(s11_rf, s11_fan_rf::TY_CODE_DIRECTION);
+          }
+
+output:
+  - platform: template
+    id: fan_light_output
+    type: binary
+    write_action:
+      - lambda: |-
+          s11_fan_rf::handle_ca285_light_write(s11_rf, state);
+
+light:
+  - platform: binary
+    name: "客廳吊扇燈"
+    id: living_room_fan_light
+    output: fan_light_output
+    restore_mode: ALWAYS_OFF
+
+select:
+  - platform: template
+    name: "客廳吊扇 定時設定"
+    id: living_room_fan_timer
+    icon: "mdi:timer-outline"
+    options:
+      - "無定時"
+      - "1 小時"
+      - "2 小時"
+      - "4 小時"
+      - "8 小時"
+    initial_option: "無定時"
+    optimistic: true
+    set_action:
+      - lambda: |-
+          if (!s11_fan_rf::s_is_rx_syncing) {
+            if (x == "1 小時") {
+              s11_fan_rf::send_ca285_code(s11_rf, s11_fan_rf::TY_CODE_TIMER_1H);
+              s11_fan_rf::set_fan_timer(1);
+            } else if (x == "2 小時") {
+              s11_fan_rf::send_ca285_code(s11_rf, s11_fan_rf::TY_CODE_TIMER_2H);
+              s11_fan_rf::set_fan_timer(2);
+            } else if (x == "4 小時") {
+              s11_fan_rf::send_ca285_code(s11_rf, s11_fan_rf::TY_CODE_TIMER_4H);
+              s11_fan_rf::set_fan_timer(4);
+            } else if (x == "8 小時") {
+              s11_fan_rf::send_ca285_code(s11_rf, s11_fan_rf::TY_CODE_TIMER_8H);
+              s11_fan_rf::set_fan_timer(8);
+            } else {
+              s11_fan_rf::cancel_fan_timer();
+            }
+          }
+
+text_sensor:
+  - platform: template
+    name: "最近捕獲 433MHz 射頻碼"
+    id: s11_last_rf_code
+    icon: "mdi:remote"
+
 # S11 藍色狀態指示燈 (P21, Active-HIGH)
 status_led:
   pin:
@@ -108,11 +213,3 @@ binary_sensor:
     filters:
       - delayed_on: 15ms
       - delayed_off: 15ms
-
-# 空調實體 (可選 hitachi_ac344 或 maxe_coolix，紅外發射自動走 S11 硬體 PWM3 / P9)
-climate:
-  - platform: hitachi_ac344
-    name: ${climate_name}
-    id: ac_climate
-    receiver_id: ir_rx
-    repeat: 1

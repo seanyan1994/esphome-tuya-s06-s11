@@ -10,6 +10,7 @@ Production-grade **ESPHome (`libretiny` / `bk72xx`)** external components and re
 - **`maxe_coolix`**: Full-duplex ESPHome Climate component for **Midea Coolix 48-bit** air conditioners (used globally by **Midea, Carrier, Comfee, Pioneer, Kaysun, Maxe RC-62**, etc.), featuring a **120-pulse Sliding Window Header Search** to prevent ambient light noise from dropping physical remote presses.
 - **`tuya_rf`**: Fixed and hardware-verified **CMOSTEK CMT2300A** 433.92MHz OOK RF transceiver component for **Tuya S11**, resolving wrong SPI pin mappings, floating SDIO reads, and inverted Mark/Space polarity in older community drivers.
 - **[`s06_hitachi_hw.h`](s06_hitachi_hw.h)**: Register-level **38kHz Hardware PWM** carrier driver (`PWM0` for S06, `PWM3` for S11) with **Delta-Tick phase-compensated microsecond timing** and **Anti-Jamming 0V Ground Pull-Down protection**.
+- **[`s11_fan_rf.h`](s11_fan_rf.h)**: 433.92MHz Ceiling Fan & Light full-duplex state engine supporting both **24-bit EV1527 (5-speed)** and **30-bit CA285 (6-speed DC inverter)** ceiling fans with physical remote interception, echo-loop suppression, and wall-switch power-off guard.
 
 ---
 

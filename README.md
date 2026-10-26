@@ -10,6 +10,7 @@
 - **`maxe_coolix`**：台灣萬士益冷氣（MAXE RC-62 / Midea Coolix 48-bit 格雷碼協定）雙向同步 Climate 元件，內建前段 120 脈衝滑動視窗前導碼搜尋，徹底克服環境光雜訊漏碼問題。
 - **`tuya_rf`**：針對 Tuya S11 內建 **CMOSTEK CMT2300A** 433.92MHz 射頻收發晶片（經硬體電路量測與邏輯分析儀實測驗證 6-Pin SPI/Direct Mode 真值腳位，修正社群舊版腳位錯亂與 Mark/Space 極性顛倒問題）。
 - **[`s06_hitachi_hw.h`](s06_hitachi_hw.h)**：BK7238 暫存器級 38kHz 硬體 PWM 載波驅動與 Delta-Tick 相位補償微秒延時。
+- **[`s11_fan_rf.h`](s11_fan_rf.h)**：433.92MHz 吊扇燈雙向同步控制引擎（同時支援 **EV1527 24-bit 5 檔風扇燈** 與 **CA285 30-bit 6 檔直流變頻風扇燈**，具備實體遙控器按壓攔截回寫 HA、防迴環鎖與牆壁總開關斷電保護）。
 
 ---
 
