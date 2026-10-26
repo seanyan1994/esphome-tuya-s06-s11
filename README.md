@@ -1,5 +1,7 @@
 # ESPHome Tuya S06 / S11 (BK7238) 紅外線與 433MHz 射頻全雙工控制庫
 
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-請作者喝杯咖啡-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/sean758486)
+
 本專案提供針對 **塗鴉 Tuya S06（純紅外線）** 與 **Tuya S11（紅外線 + 433.92MHz 射頻）**（搭載 **Beken BK7238** 晶片）的底層硬體 PWM 驅動與台灣常見冷氣/風扇全雙工（雙向狀態同步）ESPHome 外部元件：
 
 - **`hitachi_ac344`**：台灣日立冷氣（Hitachi 344-bit / 43-Byte 協定）雙向同步 Climate 元件。
@@ -79,9 +81,21 @@
 
 使用方式：
 ```bash
-git clone https://github.com/<your-username>/esphome-tuya-s06-s11.git
+git clone https://github.com/seanyan1994/esphome-tuya-s06-s11.git
 cd esphome-tuya-s06-s11/examples
 cp secrets.yaml.example secrets.yaml
 # 編輯 secrets.yaml 填入 Wi-Fi SSID 與密碼
 esphome run tuya-s06-maxe-ac.yaml
 ```
+
+---
+
+## ☕ 贊助支持 (Donate / Buy Me a Coffee)
+
+如果這個專案幫你省下了抓紅外線/射頻碼與踩坑 BK7238 的時間，歡迎請我喝杯咖啡支持持續維護：
+
+- **國際 / 信用卡 / PayPal (Ko-fi)**：  
+  [![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/sean758486)
+- **台灣本地免手續費贊助（TWQR 支援全台所有網銀 App、街口支付、全支付、iPASS MONEY 掃碼）**：  
+  <img src="assets/twqr_donate.png" alt="Buy Sean a Coffee - TWQR 台灣通用贊助碼" width="280" />
+
