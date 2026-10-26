@@ -2,6 +2,8 @@
 
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-請作者喝杯咖啡-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/sean758486)
 
+🌐 **Language**: **[繁體中文](README.md)** | **[English](README.en.md)**
+
 本專案提供針對 **塗鴉 Tuya S06（純紅外線）** 與 **Tuya S11（紅外線 + 433.92MHz 射頻）**（搭載 **Beken BK7238** 晶片）的底層硬體 PWM 驅動與台灣常見冷氣/風扇全雙工（雙向狀態同步）ESPHome 外部元件：
 
 - **`hitachi_ac344`**：台灣日立冷氣（Hitachi 344-bit / 43-Byte 協定）雙向同步 Climate 元件。
