@@ -1,0 +1,68 @@
+substitutions:
+  device_name: "tuya-s06-maxe"
+  friendly_name: "Tuya S06 萬士益空調控制器"
+  climate_name: "萬士益冷氣"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  includes:
+    - ../s06_hitachi_hw.h
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+    components: [ maxe_coolix ]
+
+bk72xx:
+  board: t1-3s
+
+logger:
+  level: DEBUG
+
+api:
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+
+safe_mode:
+  num_attempts: 10
+  boot_is_good_after: 5s
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  power_save_mode: NONE
+  ap:
+    ssid: "${device_name}-Fallback"
+
+captive_portal:
+
+# S06 紅外線接收頭 (P26, Active-LOW)
+remote_receiver:
+  - id: ir_rx
+    pin:
+      number: P26
+      inverted: true
+      mode: INPUT_PULLUP
+    tolerance: 45%
+    buffer_size: 1000
+    idle: 25ms
+    dump: []
+
+# S06 藍色狀態指示燈 (P24, Active-LOW)
+status_led:
+  pin:
+    number: P24
+    inverted: true
+
+# 萬士益 (MAXE RC-62 / Midea Coolix 48-bit) 雙向同步空調實體
+# 紅外線發射自動走 BK7238 硬體 PWM0 (P6) 38kHz 載波
+climate:
+  - platform: maxe_coolix
+    name: ${climate_name}
+    id: maxe_ac
+    receiver_id: ir_rx

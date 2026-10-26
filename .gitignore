@@ -1,0 +1,17 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ESPHome build & secrets
+.esphome/
+secrets.yaml
+
+# Firmware dumps & binaries
+*.bin
+*.rbl
+*.elf
+*.uf2
+
+# OS metadata
+.DS_Store
